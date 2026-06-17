@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#000000" />
+  <title>Voice-Scroll Teleprompter</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- ============ SETUP SCREEN ============ -->
+  <section id="setup" class="screen">
+    <header class="setup-head">
+      <h1>Voice-Scroll Teleprompter</h1>
+      <p class="tagline">Bold Visuals &mdash; v1</p>
+    </header>
+
+    <!-- Phase 2: scripts preloaded from the manifest on launch -->
+    <div class="field">
+      <span>Scripts <small id="picker-source" class="src-tag"></small></span>
+      <div id="picker" class="picker"><p class="picker-empty">Loading scripts&hellip;</p></div>
+    </div>
+
+    <label class="field">
+      <span>Or paste a script</span>
+      <textarea id="script-input" rows="6"
+        placeholder="Paste or type your script here&hellip;"></textarea>
+    </label>
+
+    <div class="setup-controls">
+      <div class="field inline">
+        <span>Font size</span>
+        <span class="stepper" data-target="font-size" data-min="24" data-max="200" data-step="2" data-unit="">
+          <button class="step-dn" type="button" tabindex="-1">&minus;</button>
+          <input type="hidden" id="font-size" value="64" />
+          <span class="step-val"></span>
+          <button class="step-up" type="button" tabindex="-1">+</button>
+        </span>
+      </div>
+
+      <div class="field inline">
+        <span>Manual speed</span>
+        <span class="stepper" data-target="speed" data-min="10" data-max="300" data-step="5" data-unit="">
+          <button class="step-dn" type="button" tabindex="-1">&minus;</button>
+          <input type="hidden" id="speed" value="45" />
+          <span class="step-val"></span>
+          <button class="step-up" type="button" tabindex="-1">+</button>
+        </span>
+      </div>
+
+      <div class="field inline">
+        <span>Read-line height</span>
+        <span class="stepper" data-target="readline-pos" data-min="15" data-max="65" data-step="1" data-unit="%">
+          <button class="step-dn" type="button" tabindex="-1">&minus;</button>
+          <input type="hidden" id="readline-pos" value="38" />
+          <span class="step-val"></span>
+          <button class="step-up" type="button" tabindex="-1">+</button>
+        </span>
+      </div>
+
+      <div class="field inline">
+        <span>Column width</span>
+        <span class="stepper" data-target="col-width" data-min="50" data-max="100" data-step="2" data-unit="%">
+          <button class="step-dn" type="button" tabindex="-1">&minus;</button>
+          <input type="hidden" id="col-width" value="88" />
+          <span class="step-val"></span>
+          <button class="step-up" type="button" tabindex="-1">+</button>
+        </span>
+      </div>
+
+      <div class="field inline">
+        <span>Line spacing</span>
+        <span class="stepper" data-target="line-height" data-min="120" data-max="220" data-step="5" data-scale="100" data-unit="">
+          <button class="step-dn" type="button" tabindex="-1">&minus;</button>
+          <input type="hidden" id="line-height" value="150" />
+          <span class="step-val"></span>
+          <button class="step-up" type="button" tabindex="-1">+</button>
+        </span>
+      </div>
+
+      <div class="field inline">
+        <span>Colour</span>
+        <div class="theme-chips" id="theme-chips">
+          <button type="button" class="theme-chip selected" data-theme="wb" title="White on black">W/B</button>
+          <button type="button" class="theme-chip" data-theme="amber" title="Amber on black">Amber</button>
+          <button type="button" class="theme-chip" data-theme="hc" title="High contrast (black on white)">HC</button>
+        </div>
+      </div>
+
+      <div class="toggles">
+        <label class="chk"><input type="checkbox" id="voice-mode" /> &#127908; Voice-following scroll</label>
+        <label class="chk"><input type="checkbox" id="countdown-on" checked /> 3-2-1 lead-in</label>
+        <label class="chk"><input type="checkbox" id="mirror-h" /> Mirror &harr;</label>
+        <label class="chk"><input type="checkbox" id="mirror-v" /> Mirror &updownarrow;</label>
+      </div>
+      <p id="voice-note" class="hint warn hidden"></p>
+    </div>
+
+    <button id="start-btn" class="primary">Start prompting</button>
+    <p class="hint">In the prompter: <b>tap</b> pause/resume &middot; <b>mic</b> voice &middot; <b>&uarr;/&darr;</b> speed &middot; <b>PgUp/PgDn</b> jump &para; &middot; <b>R</b> restart &middot; <b>Esc</b> exit</p>
+  </section>
+
+  <!-- ============ PROMPTER SCREEN ============ -->
+  <section id="prompter" class="screen hidden">
+    <div id="readline" aria-hidden="true"></div>
+
+    <div id="scroll-area">
+      <div id="script-text"><!-- rendered word spans --></div>
+    </div>
+
+    <div id="progress" class="progress hidden"></div>
+
+    <div id="hud" class="hud">
+      <button id="mic-btn" class="hidden" title="Voice on/off">&#127908;</button>
+      <button id="prev-btn" title="Previous paragraph (PgUp)">&#8593;</button>
+      <button id="restart-btn" title="Restart (R)">&#9198;</button>
+      <button id="playpause-btn" title="Play / Pause (tap screen)">&#9208;</button>
+      <button id="next-btn" title="Next paragraph (PgDn)">&#8595;</button>
+      <span id="speed-ctl" class="speed-ctl stepper" title="Manual speed"
+            data-target="hud-speed" data-min="10" data-max="300" data-step="5" data-unit="">
+        <button class="step-dn" type="button" tabindex="-1">&minus;</button>
+        <span class="ic">&#9201;</span>
+        <input type="hidden" id="hud-speed" value="45" />
+        <span class="step-val"></span>
+        <button class="step-up" type="button" tabindex="-1">+</button>
+      </span>
+      <input type="range" id="scrub" min="0" max="1000" value="0" title="Scrub position" />
+      <button id="exit-btn" title="Exit (Esc)">&#10005;</button>
+    </div>
+
+    <div id="countdown" class="countdown hidden"></div>
+    <div id="status-badge" class="status-badge hidden"></div>
+  </section>
+
+  <!-- module order matters: deps before app.js -->
+  <script src="config.js"></script>
+  <script src="store.js"></script>
+  <script src="matcher.js"></script>
+  <script src="voice.js"></script>
+  <script src="drive.js"></script>
+  <script src="preload.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

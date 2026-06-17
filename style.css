@@ -1,0 +1,266 @@
+:root {
+  --bg: #000;
+  --fg: #fff;
+  --accent: #4cc2ff;
+  --readline: rgba(76, 194, 255, 0.55);
+  --hud-bg: rgba(20, 20, 22, 0.82);
+  --readline-top: 38vh;
+  --col-width: 88vw;
+  --line-height: 1.5;
+}
+
+/* colour / contrast presets (applied to <body>) */
+body.theme-amber { --fg: #ffb454; --readline: rgba(255, 180, 84, 0.55); }
+body.theme-hc { --bg: #fff; --fg: #000; --readline: rgba(0, 0, 0, 0.6); --hud-bg: rgba(235,235,238,0.9); }
+body.theme-hc #script-text .w.read { color: #b9b9c0; }
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, "Segoe UI", Roboto, system-ui, sans-serif;
+  overscroll-behavior: none;
+}
+
+.screen { height: 100dvh; width: 100vw; }
+.hidden { display: none !important; }
+
+/* ---------- Setup ---------- */
+#setup {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.setup-head h1 { margin: 0 0 4px; font-size: 24px; }
+.tagline { margin: 0; color: #8a8a90; font-size: 13px; }
+
+.field { display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.field > span { color: #b9b9c0; }
+.field.inline { flex-direction: row; align-items: center; gap: 12px; }
+.field.inline > span { min-width: 96px; }
+.field.inline input[type="range"] { flex: 1; }
+
+textarea {
+  width: 100%;
+  background: #101013;
+  color: var(--fg);
+  border: 1px solid #2a2a30;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 16px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.setup-controls { display: flex; flex-direction: column; gap: 14px; }
+.toggles { display: flex; flex-wrap: wrap; gap: 18px; }
+.chk { font-size: 14px; color: #d4d4da; display: flex; align-items: center; gap: 8px; }
+
+input[type="range"] { accent-color: var(--accent); height: 28px; }
+
+button.primary {
+  background: var(--accent);
+  color: #00131d;
+  border: none;
+  border-radius: 12px;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+button.primary:active { filter: brightness(0.9); }
+
+.hint { color: #6f6f78; font-size: 12px; text-align: center; margin: 0; }
+.hint b { color: #9a9aa2; }
+.hint.warn { color: #ffb454; text-align: left; }
+
+/* ---------- Picker (Phase 2) ---------- */
+.src-tag { color: #6f6f78; font-weight: 400; font-size: 11px; margin-left: 6px; }
+.picker { display: flex; flex-direction: column; gap: 8px; }
+.picker-empty { color: #6f6f78; font-size: 14px; margin: 4px 0; }
+.script-item {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  background: #101013; border: 1px solid #2a2a30; border-radius: 10px;
+  padding: 12px 14px; cursor: pointer; text-align: left; color: var(--fg); font-size: 15px;
+}
+.script-item:active { border-color: var(--accent); }
+.script-item.selected { border-color: var(--accent); background: #0d1b22; }
+.script-item .meta { color: #6f6f78; font-size: 12px; }
+
+/* word spans for voice matching */
+#script-text .w { transition: color 0.2s; }
+#script-text.voice .w.read { color: #5f5f68; }
+
+/* ---------- Prompter ---------- */
+#prompter { position: relative; overflow: hidden; }
+
+#scroll-area {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  /* mirror transforms applied via body classes below */
+}
+
+#script-text {
+  max-width: var(--col-width, 88vw);
+  margin: 0 auto;
+  font-size: var(--prompter-font, 64px);
+  line-height: var(--line-height, 1.5);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: pre-wrap;
+  word-break: break-word;
+  /* leading space = read-line height so the first line can reach the line;
+     trailing space so the last line can too. Set by JS to match read-line. */
+  padding-top: var(--readline-top, 38vh);
+  padding-bottom: 60vh;
+}
+
+/* read-line indicator — height set via --readline-top */
+#readline {
+  position: absolute;
+  left: 0; right: 0;
+  top: var(--readline-top, 38vh);
+  height: 0;
+  border-top: 2px solid var(--readline);
+  z-index: 5;
+  pointer-events: none;
+}
+#readline::before,
+#readline::after {
+  content: "";
+  position: absolute;
+  top: -7px;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+}
+#readline::before { left: 0; border-left: 12px solid var(--readline); }
+#readline::after { right: 0; border-right: 12px solid var(--readline); }
+
+/* mirror modes — applied to the scroll area only, so HUD stays readable */
+body.mirror-h #scroll-area { transform: scaleX(-1); }
+body.mirror-v #scroll-area { transform: scaleY(-1); }
+body.mirror-h.mirror-v #scroll-area { transform: scale(-1, -1); }
+
+/* ---------- HUD ---------- */
+.hud {
+  position: absolute;
+  left: 50%;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 94vw;
+  gap: 10px;
+  background: var(--hud-bg);
+  backdrop-filter: blur(8px);
+  border: 1px solid #303036;
+  border-radius: 999px;
+  padding: 8px 14px;
+  z-index: 10;
+  transition: opacity 0.4s;
+}
+.hud.dim { opacity: 0; pointer-events: none; }
+.hud button {
+  background: none;
+  border: none;
+  color: var(--fg);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 6px;
+}
+.hud #scrub { width: 38vw; max-width: 280px; }
+
+/* in-prompter manual speed control */
+.speed-ctl .ic { font-size: 15px; color: #9a9aa2; }
+.speed-ctl.hidden { display: none; }
+
+/* ---------- Number steppers (−  value  +) ---------- */
+.stepper { display: inline-flex; align-items: center; gap: 8px; }
+.stepper button {
+  width: 36px; height: 36px;
+  border-radius: 9px;
+  background: #101013;
+  color: var(--fg, #fff);
+  border: 1px solid #2a2a30;
+  font-size: 20px; line-height: 1;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.stepper button:active { border-color: var(--accent); color: var(--accent); }
+.stepper .step-val {
+  min-width: 46px; text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-size: 16px; color: #e6e6ea;
+}
+/* compact variant inside the HUD */
+.hud .stepper button { width: 30px; height: 30px; font-size: 17px; }
+.hud .stepper .step-val { min-width: 34px; font-size: 14px; color: #c8c8d0; }
+
+.status-badge {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0,0,0,0.7);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  z-index: 8;
+  pointer-events: none;
+  text-align: center;
+  max-width: 80vw;
+}
+.status-badge.warn { border-color: #ffb454; color: #ffb454; }
+
+/* mic button states */
+#mic-btn.live { color: #ff5a5a; animation: pulse 1.4s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.45; } }
+
+/* theme chips (setup) */
+.theme-chips { display: flex; gap: 8px; }
+.theme-chip {
+  background: #101013; color: #d4d4da; border: 1px solid #2a2a30;
+  border-radius: 8px; padding: 8px 12px; font-size: 13px; cursor: pointer;
+}
+.theme-chip.selected { border-color: var(--accent); color: var(--accent); }
+
+/* lead-in countdown overlay */
+.countdown {
+  position: absolute; inset: 0; z-index: 12;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.55);
+  font-size: 28vh; font-weight: 800; color: var(--accent);
+  pointer-events: none;
+}
+
+/* progress readout (top, auto-dims with HUD) */
+.progress {
+  position: absolute;
+  top: max(10px, env(safe-area-inset-top));
+  right: 16px;
+  z-index: 9;
+  background: var(--hud-bg);
+  border: 1px solid #303036;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: #c8c8d0;
+  transition: opacity 0.4s;
+}
+.progress.dim { opacity: 0.12; }

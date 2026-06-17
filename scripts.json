@@ -1,0 +1,54 @@
+{
+  "updated": "2026-06-17T13:28:00Z",
+  "client": "Newholme Dental",
+  "scripts": [
+    {
+      "id": "welcome",
+      "title": "Welcome / Mic Test",
+      "updated": "2026-06-17",
+      "body": "Welcome to the Bold Visuals teleprompter. Read this line out loud and watch the text follow your voice. When you pause, the scroll holds and waits for you. Tap the screen to pause. Use the scrub bar to rewind for another take."
+    },
+    {
+      "id": "tepe-brushes",
+      "title": "How & when to use TePe brushes",
+      "updated": "2026-06-17",
+      "body": "Ever wonder what this little brush is? It’s a TePe interdental brush, and it’s a game-changer for your oral health.\nHere’s how to use it:\npick the right size for your gaps. TePe colour-codes them to make it easy. Gently slide the brush between your teeth, back and forth a few times. No forcing, no twisting. That’s it.\nWhen should you use it? Once a day, ideally before brushing your teeth. It gets into the spaces your toothbrush can’t reach, where up to 40% of plaque hides.\nSmall brush. Big difference. Your gums will thank you."
+    },
+    {
+      "id": "invisalign-patients",
+      "title": "Invisalign: what patients should know",
+      "updated": "2026-06-17",
+      "body": "Think Invisalign is just about straight teeth? Think again.\nHere’s what you actually need to know before starting treatment:\nYou’ll wear your aligners 20 to 22 hours a day, they only come out to eat, drink, and brush.\nEvery one to two weeks, you switch to a new set, and each one moves your teeth a tiny bit closer to where they need to be.\nThe best part? Most people won’t even notice you’re wearing them.\n\nBut here’s the thing no one tells you, you have to be committed. Skip wearing them, and your treatment takes longer. Stay consistent, and you could have your new smile in as little as six months.\nStraight teeth. No metal. No excuses."
+    },
+    {
+      "id": "dental-implants",
+      "title": "Dental implants explained",
+      "updated": "2026-06-17",
+      "body": "Missing a tooth? Here’s what your dentist isn’t telling you on the first visit.\n\nA dental implant is a small titanium post that goes into your jawbone,  it acts like an artificial root.\nOnce it heals and fuses with the bone, a custom crown is placed on top. It looks, feels, and functions like a real tooth.\nThe process takes a few months, but the result?\nA replacement that can last a lifetime with the right care.\nNo slipping. No adhesives. Just a solid, permanent solution."
+    },
+    {
+      "id": "veneers-vs-composite",
+      "title": "Ceramic veneers vs composite",
+      "updated": "2026-06-17",
+      "body": "Thinking about veneers? Here’s the difference no one breaks down for you.\nComposite veneers are built up directly onto your teeth in a single visit. They’re more affordable, easy to repair, but they can stain and chip over time, typically lasting five to seven years.\nCeramic veneers? They’re custom-made in a lab, bonded to your teeth, and they resist staining like nothing else. They cost more upfront, but they can last fifteen years or longer with good care.\nSo which one’s right for you? It depends on your budget, your goals, and your timeline.\nOne appointment or a lifetime investment,  either way, your smile wins."
+    },
+    {
+      "id": "dental-myths",
+      "title": "Common dental myths",
+      "updated": "2026-06-17",
+      "body": "Stop believing everything you’ve heard about your teeth.\nMyth one - brushing harder cleans better. Wrong. It actually wears down your enamel and damages your gums. Gentle circles, that’s all you need.\nMyth two - white teeth mean healthy teeth. Not always. You can have perfectly white teeth and still have gum disease or cavities hiding underneath.\nMyth three - you only need a dentist when something hurts. By the time it hurts, the problem’s already advanced. Regular checkups catch things early, before they cost you time, money, and teeth.\nYour mouth is smarter than the myths. Start listening to it."
+    },
+    {
+      "id": "preventative-care",
+      "title": "Preventative dental care tips",
+      "updated": "2026-06-17",
+      "body": "Your dentist doesn’t want to fix your teeth. They want you to never need fixing in the first place.\nHere’s how. Brush twice a day for two minutes, not thirty seconds, two full minutes. Use fluoride toothpaste. Clean between your teeth daily with floss or an interdental brush.\n\nCut back on sugary snacks and acidic drinks,  every sip is an acid attack on your enamel. And if you do have something sugary, don’t brush straight away. Wait thirty minutes and let your saliva do its job first.\n\nMost importantly, see your dentist regularly. Not when it hurts. Before it hurts.\nPrevention is cheaper, faster, and painless. Treatment doesn’t have to be."
+    },
+    {
+      "id": "dental-anxiety",
+      "title": "Dental anxiety voiceover",
+      "updated": "2026-06-17",
+      "body": "We know that for a lot of people, just walking through the door of a dentist can feel like a big deal. And that’s okay.\nAt Newholme Clinic, we don’t judge. There’s nothing we haven’t seen before, whether it’s been six months or sixteen years since your last visit.\nWe’re a team who genuinely care, and everything we do is about what’s best for you. No pressure, no lectures. Just honest conversations and a plan that works at your pace.\nSo if you’ve been putting it off, you’re not alone, and you’re always welcome here."
+    }
+  ]
+}
