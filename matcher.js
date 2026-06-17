@@ -11,15 +11,15 @@
  * window.VSTMatcher = { setWords, reset, feed }
  */
 (function () {
-  const LOOKAHEAD = 40;      // how far ahead of the cursor we'll search
+  const LOOKAHEAD = 25;      // how far ahead of the cursor we'll search
   const TAIL = 10;           // how many recent spoken words we align on
-  const MIN_MATCHES = 2;     // matches needed for a confident (possibly far) jump
-  const NEAR = 6;            // a single match this close to the cursor still advances
+  const SKIP = 3;            // single-word fallback only advances within this gap
   const FINAL_BUFFER = 16;   // committed words kept for context
 
   let words = [];            // [{ el, norm }]
   let cursor = 0;
   let recentFinal = [];      // committed (final) spoken words
+  let lastSig = '';          // last spoken tail we acted on (de-dupe interims)
 
   // number-word <-> digit, so "five" and "5" match either way
   const NUMW = {
@@ -52,6 +52,7 @@
   function reset() {
     cursor = 0;
     recentFinal = [];
+    lastSig = '';
   }
 
   // true if edit distance between a and b is <= 1
@@ -70,41 +71,44 @@
     return edits <= 1;
   }
 
-  // Forgiving token equality — speech recognition mishears, so allow shared
-  // stems (plurals/tense: "implant"/"implants") and one-character slips.
+  // Forgiving token equality — speech recognition mishears, so allow one-char
+  // slips and plurals/tense ("implant"/"implants" = one edit). Deliberately NOT
+  // a prefix match: that over-matched ("care"/"careful") and caused false jumps.
   function fuzzyEq(a, b) {
     if (a === b) return true;
     if (a.length < 4 || b.length < 4) return false; // short words must match exactly
-    if (a.startsWith(b) || b.startsWith(a)) return true;
     return lev1(a, b);
   }
 
-  // Align spoken tail against script window starting at `cursor`.
-  // Greedy forward walk; advances to the furthest fuzzy match. Returns index or -1.
+  // Find the reading position of the spoken tail within the forward window.
+  //
+  // Primary signal is a BIGRAM: two consecutive spoken words matching two
+  // consecutive script words. We take the position CLOSEST to the cursor, so a
+  // phrase that recurs later in the script can't yank us forward. This is what
+  // stops "massive skip-ahead" on common words like "the / you / your".
+  //
+  // Fallback (no bigram — recognizer garbled the previous word): advance only
+  // if the immediately-expected next word matches, within a tiny gap. Returns
+  // the matched script index, or -1 to hold.
   function align(spoken) {
     if (!spoken.length || cursor >= words.length) return -1;
     const end = Math.min(cursor + LOOKAHEAD, words.length);
-    let searchPos = cursor;
-    let matchedTo = -1;
-    let matches = 0;
+    const last = spoken[spoken.length - 1];
+    const prev = spoken.length >= 2 ? spoken[spoken.length - 2] : null;
 
-    for (const w of spoken) {
-      if (w.length < 2 && !/\d/.test(w)) continue; // skip 1-char filler, but keep digits
-      for (let j = searchPos; j < end; j++) {
-        if (fuzzyEq(words[j].norm, w)) {
-          matchedTo = j;
-          searchPos = j + 1;
-          matches++;
-          break;
+    if (prev) {
+      for (let j = cursor; j < end; j++) {
+        if (j >= 1 && fuzzyEq(words[j].norm, last) && fuzzyEq(words[j - 1].norm, prev)) {
+          return j; // closest bigram to the cursor wins
         }
       }
     }
-    if (matchedTo < 0) return -1;
-    // Confident jump (2+ matches anywhere), OR normal word-by-word progress:
-    // a single match sitting right at the cursor — how on-script reading looks
-    // on each interim update once earlier words are already consumed.
-    if (matches >= MIN_MATCHES) return matchedTo;
-    if (matches >= 1 && matchedTo - cursor <= NEAR) return matchedTo;
+
+    // word-by-word fallback: only the next expected word(s), never a far leap
+    const near = Math.min(cursor + SKIP, end);
+    for (let j = cursor; j < near; j++) {
+      if (last.length >= 4 && fuzzyEq(words[j].norm, last)) return j;
+    }
     return -1;
   }
 
@@ -118,6 +122,10 @@
       recentFinal = recentFinal.concat(interimWords).slice(-FINAL_BUFFER);
     }
 
+    const sig = spoken.join(' ');
+    if (sig === lastSig) return null; // identical to last update → nothing new said
+    lastSig = sig;
+
     const matchedTo = align(spoken);
     if (matchedTo >= 0) {
       cursor = matchedTo + 1;
@@ -130,6 +138,7 @@
   // so voice tracking resumes from where the reader actually is.
   function seekToWordIndex(i) {
     cursor = Math.max(0, Math.min(i, words.length));
+    lastSig = '';
   }
 
   window.VSTMatcher = { setWords, reset, feed, seekToWordIndex, normalizeToken };
