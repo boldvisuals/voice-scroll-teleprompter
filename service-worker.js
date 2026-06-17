@@ -1,7 +1,7 @@
 /* Service worker — app-shell cache for offline + instant reopen (Phase 3).
  * Script bodies are cached separately in IndexedDB by preload.js; this caches
  * the static shell. Bump CACHE when you change shell files. */
-const CACHE = 'vst-shell-v4';
+const CACHE = 'vst-shell-v5';
 const SHELL = [
   './',
   './index.html',
