@@ -7,7 +7,7 @@
  * This module is intentionally self-contained and lazy: nothing here runs
  * unless preload.js sees drive.enabled and calls listScripts().
  *
- * window.VSTDrive = { listScripts }
+ * window.VSTDrive = { listScripts, fetchBody }
  */
 (function () {
   const cfg = (window.VST_CONFIG && window.VST_CONFIG.drive) || {};
@@ -74,5 +74,19 @@
     });
   }
 
-  window.VSTDrive = { listScripts };
+  // Fetches a script body from a `path` returned by listScripts() — either a
+  // plain-file `alt=media` URL or a Google Docs `export?mimeType=text/plain`
+  // URL. Both need the same bearer token; preload.getBody routes `_auth`
+  // scripts here instead of doing a plain fetch.
+  async function fetchBody(url) {
+    const tok = await getToken();
+    const res = await fetch(url, {
+      headers: { Authorization: 'Bearer ' + tok },
+      cache: 'no-cache',
+    });
+    if (!res.ok) throw new Error('Drive HTTP ' + res.status);
+    return res.text();
+  }
+
+  window.VSTDrive = { listScripts, fetchBody };
 })();

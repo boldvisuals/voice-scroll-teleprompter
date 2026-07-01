@@ -74,7 +74,7 @@ Only worth it if the manifest path proves annoying. To enable:
    ```js
    drive: { enabled: true, clientId: 'xxxx.apps.googleusercontent.com', folderId: '<drive-folder-id>' }
    ```
-3. The app then lists `.txt` / Google Docs from that folder via Drive API v3 and uses them in place of the manifest. (Body fetch for Drive files still needs the bearer token wired into `preload.getBody` — noted as the remaining Phase-4 task.)
+3. The app then lists `.txt` / Google Docs from that folder via Drive API v3 and uses them in place of the manifest. Body fetches for Drive files (plain `.txt` or Docs text export) go through `drive.js → fetchBody`, which injects the OAuth bearer token.
 
 ## Known caveats (from the handover)
 

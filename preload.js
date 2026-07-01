@@ -52,8 +52,15 @@
     const cached = await window.VSTStore.get(bodyKey(script.id));
     if (typeof cached === 'string') return cached;
     if (script.path) {
-      const res = await fetch(script.path, { cache: 'no-cache' });
-      const text = await res.text();
+      let text;
+      if (script._auth && window.VSTDrive) {
+        // Phase 4: Drive-sourced body (plain file or Docs export URL) — needs
+        // the OAuth bearer token, which drive.js holds.
+        text = await window.VSTDrive.fetchBody(script.path);
+      } else {
+        const res = await fetch(script.path, { cache: 'no-cache' });
+        text = await res.text();
+      }
       await window.VSTStore.set(bodyKey(script.id), text);
       return text;
     }
